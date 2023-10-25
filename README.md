@@ -1,1 +1,6 @@
-# CSC_480
+# CSC 480
+
+AI Agent For Settlers Of Catan 
+
+
+
