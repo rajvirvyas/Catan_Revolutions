@@ -21,7 +21,7 @@ EIGHT_MAX: int = 2
 NINE_MAX: int = 2
 TEN_MAX: int = 2
 ELEVEN_MAX: int = 2
-TWELVE_MAX: int = 2
+TWELVE_MAX: int = 1
 
 BOARD_SIZE: int = 19
 
