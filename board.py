@@ -158,7 +158,6 @@ class BoardGraph:
         return closest_point
 
 
-
 class Board:
     bg: BoardGraph
     scale: float
@@ -200,8 +199,10 @@ class Board:
         #     t.draw(win)
         #     i += 1
 
+
 def distance_between_points(p1: Point, p2: Point) -> float:
     return math.sqrt(math.fabs((p1.x - p2.x) ** 2) + math.fabs((p1.y - p2.y) ** 2))
+
 
 def get_hexagon_center(hexagon: Polygon) -> Point:
     sum_x: int = 0

@@ -12,7 +12,6 @@ def main():
     circle.setFill("Red")
     circle.draw(win)
 
-
     while win.checkMouse() is None:
         x = win.winfo_pointerx()
         y = win.winfo_pointery()
@@ -21,7 +20,7 @@ def main():
         print(f"x: {circle.getCenter().x - abs_coord_x}, y: {circle.getCenter().y - abs_coord_y}")
         new_point: Point = board.bg.nearest_vertex(Point(abs_coord_x, abs_coord_y))
 
-        circle.move(new_point.x - circle.getCenter().x,new_point.y - circle.getCenter().y)
+        circle.move(new_point.x - circle.getCenter().x, new_point.y - circle.getCenter().y)
     win.close()
 
 
