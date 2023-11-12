@@ -1,5 +1,18 @@
+from enum import Enum
+
 from board import Board
 from graphics import *
+
+
+class Action(Enum):
+    ROLL_DICE: int = 0
+    BUILD_SETTLEMENT: int = 1
+    BUILD_CITY: int = 2
+    BUILD_ROAD: int = 3
+    BUILD_DEV_CARD: int = 4
+    TRADE_BANK: int = 5
+    TRADE_PLAYER: int = 6
+    PLAY_DEV_CARD: int = 7
 
 
 def main():
