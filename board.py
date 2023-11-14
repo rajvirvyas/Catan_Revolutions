@@ -213,7 +213,7 @@ class BoardGraph:
         else:
             return False
 
-    def can_build_road(self, pos: Point, player_id: int):
+    def can_build_road(self, pos: Point, player_id: int) -> bool:
         edge: Edge = self.nearest_edge(pos)
 
         if not edge.has_road():
@@ -222,6 +222,18 @@ class BoardGraph:
                     return True
         else:
             return False
+
+    def build_road(self, pos: Point, poly: Polygon, player_id: int) -> bool:
+        if self.can_build_road(pos, player_id):
+            edge: Edge = self.nearest_edge(pos)
+
+            if not edge.has_road():
+                for e in self.graph[edge.v1] + self.graph[edge.v2]:
+                    if e.has_road() and e.road.player_id == player_id:
+                        edge.add_road(player_id, poly)
+                        return True
+
+        return False
 
 
 class Board:
