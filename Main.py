@@ -4,6 +4,8 @@ from enum import Enum
 from board import Board, BoardGraph, Edge
 from graphics import *
 from player import Player
+from dice import *
+from tkinter import *
 
 ROAD_WIDTH: int = 10
 
@@ -12,7 +14,7 @@ win = GraphWin("Catan Board", 1000, 700)
 
 class Action(Enum):
     NOTHING: int = 0
-    ROLL_DICE: int = 1
+    ROLL_DICE: int = 1how 
     BUILD_SETTLEMENT: int = 2
     BUILD_CITY: int = 3
     BUILD_ROAD: int = 4
@@ -59,11 +61,15 @@ def build_road(bg: BoardGraph, pos: Point, scale: float, player: Player) -> bool
     return False
 
 
+
+
+
 def main():
     scale: float = 50.0
     center: Point = Point(500, 350)
     board: Board = Board(scale, center)
     board.draw_board(win)
+
     placement_circle: Circle = Circle(Point(0.0, 0.0), 20.0)
     placement_circle.setFill("Red")
     placement_circle_drawn: bool = False
@@ -94,6 +100,27 @@ def main():
             case _:
                 placement_circle.undraw()
                 placement_circle_drawn = False
+
+
+    circle: Circle = Circle(Point(0.0, 0.0), 20.0)
+    circle.setFill("Red")
+    circle.draw(win)
+    # For Dice-----------------------------------------------------------------------------
+    l1 = Label(win, font=("Helvetica", 150), text='')  # Create a label with empty text
+    l1.place(x=800, y=0)
+    b1 = Button(win, text="Roll the Dice!", foreground='blue', command=lambda: roll(l1))
+    b1.place(x=800, y=0)
+#--------------------------------------------------------------------------------------
+
+    while win.checkMouse() is None:
+        x = win.winfo_pointerx()
+        y = win.winfo_pointery()
+        abs_coord_x = x - win.winfo_rootx()
+        abs_coord_y = y - win.winfo_rooty()
+        
+        new_point: Point = board.bg.nearest_vertex(Point(abs_coord_x, abs_coord_y))
+
+        circle.move(new_point.x - circle.getCenter().x, new_point.y - circle.getCenter().y)
 
     win.close()
 
