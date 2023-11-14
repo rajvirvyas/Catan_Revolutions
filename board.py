@@ -55,19 +55,18 @@ class Tile:
 
 
 class Road:
-    owner: str
-    color: str
-    rect: Rectangle
+    rect: Polygon
+    player_id: int
 
-    def __init__(self, rect: Rectangle):
-        self.owner = ""
-        self.color = ""
+    def __init__(self, rect: Polygon, player_id):
         self.rect = rect
+        self.player_id = player_id
 
 
 class Vertex:
     pos: Point  # Vertex point
     adj_tiles: List[Tile]  # list of edge object references
+    has_settlement: bool = False
 
     def __init__(self, pos: Point, adj_tiles: List[Tile]):
         self.pos = pos
@@ -79,21 +78,36 @@ class Vertex:
     def __eq__(self, other):
         return (self.pos.x, self.pos.y) == (other.pos.x, other.pos.y)
 
+    def add_settlement(self):
+        self.has_settlement = True
+
 
 class Edge:
     v1: Vertex
     v2: Vertex
     road: Road = None
+    center: Point
 
     def __init__(self, v1: Vertex, v2: Vertex):
         self.v1 = v1
         self.v2 = v2
+        self.center = Point((v1.pos.x + v2.pos.x) / 2, (v1.pos.y + v2.pos.y) / 2)
 
     def __eq__(self, other):
         return (self.v1, self.v2) == (other.v1, other.v2)
 
-    def add_road(self, road: Road):
-        self.road = road
+    def has_road(self) -> bool:
+        if self.road is not None:
+            return True
+        else:
+            return False
+
+    def add_road(self, player_id: int, poly: Polygon) -> bool:
+        if self.road is not None:
+            return False
+
+        self.road = Road(poly, player_id)
+        return True
 
 
 class BoardGraph:
@@ -146,7 +160,18 @@ class BoardGraph:
         else:
             return Err("Edge Vertex not in Graph")
 
-    def nearest_vertex(self, pos: Point) -> Point:
+    def nearest_edge(self, pos: Point) -> Edge:
+        min_distance: float = sys.float_info.max
+        closest_edge: Edge = self.edges[0]
+        for e in self.edges:
+            distance: float = distance_between_points(e.center, pos)
+            if distance <= min_distance:
+                min_distance = distance
+                closest_edge = e
+
+        return closest_edge
+
+    def nearest_vertex_point(self, pos: Point) -> Point:
         min_distance: float = sys.float_info.max
         closest_point: Point = pos
         for v in self.vertices:
@@ -156,6 +181,59 @@ class BoardGraph:
                 closest_point = v.pos
 
         return closest_point
+
+    def nearest_vertex(self, pos: Point) -> Vertex:
+        min_distance: float = sys.float_info.max
+        closest_vertex: Vertex = self.vertices[0]
+        for v in self.vertices:
+            distance: float = distance_between_points(v.pos, pos)
+            if distance <= min_distance:
+                min_distance = distance
+                closest_vertex = v
+
+        return closest_vertex
+
+    def can_build_settlement(self, pos: Point, player_id: int):
+        v: Vertex = self.nearest_vertex(pos)
+
+        if not v.has_settlement:
+            settlement_nearby: bool = False
+            connecting_road: bool = False
+            for e in self.graph[v]:
+                if (e.v2 == v and e.v1.has_settlement) or (e.v1 == v and e.v2.has_settlement):
+                    settlement_nearby = True
+                if e.road is not None and e.road.player_id == player_id:
+                    connecting_road = True
+
+            if connecting_road and not settlement_nearby:
+                v.add_settlement()
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    def can_build_road(self, pos: Point, player_id: int) -> bool:
+        edge: Edge = self.nearest_edge(pos)
+
+        if not edge.has_road():
+            for e in self.graph[edge.v1] + self.graph[edge.v2]:
+                if e.has_road() and e.road.player_id == player_id:
+                    return True
+        else:
+            return False
+
+    def build_road(self, pos: Point, poly: Polygon, player_id: int) -> bool:
+        if self.can_build_road(pos, player_id):
+            edge: Edge = self.nearest_edge(pos)
+
+            if not edge.has_road():
+                for e in self.graph[edge.v1] + self.graph[edge.v2]:
+                    if e.has_road() and e.road.player_id == player_id:
+                        edge.add_road(player_id, poly)
+                        return True
+
+        return False
 
 
 class Board:
@@ -533,7 +611,7 @@ def generate_edges(vertices: List[Vertex]) -> List[Edge]:
     edges.append(Edge(vertices[28], vertices[29]))
     edges.append(Edge(vertices[18], vertices[29]))
     edges.append(Edge(vertices[29], vertices[30]))
-    edges.append(Edge(vertices[30], vertices[30]))
+    edges.append(Edge(vertices[30], vertices[31]))
     edges.append(Edge(vertices[20], vertices[31]))
     edges.append(Edge(vertices[31], vertices[32]))
     edges.append(Edge(vertices[32], vertices[33]))
