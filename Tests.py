@@ -2,7 +2,7 @@ import unittest
 
 import Main
 from Main import Action
-from board import Board, BoardGraph
+from board import Board, BoardGraph, Road
 from graphics import GraphWin, Point, Circle, Polygon
 from player import Player
 
@@ -41,6 +41,7 @@ class MyTestCase2(unittest.TestCase):
         objects = []
         player1: Player = Player("Blue", 0)
         action: Action = Action.BUILD_ROAD
+        bg.edges[0].road = Road(Main.road_poly(bg.nearest_edge(Point(0, 0)), scale).clone(), player1.player_id)
 
         while True:
             match action:
@@ -59,9 +60,10 @@ class MyTestCase2(unittest.TestCase):
                         placement_poly.setFill("Red")
                         placement_poly.draw(win)
                         center = bg.nearest_edge(Point(abs_coord_x, abs_coord_y)).center
-                    print(Point(center.x - new_center.x, center.y - new_center.y))
-                    if win.checkMouse() is not None:
-                        road_poly: Polygon = placement_poly.clone()
+                    # print(Point(center.x - new_center.x, center.y - new_center.y))
+                    road_poly: Polygon = placement_poly.clone()
+                    current_pos = win.checkMouse()
+                    if current_pos is not None and bg.build_road(current_pos, road_poly, player1.player_id):
                         road_poly.setFill("Blue")
                         road_poly.draw(win)
                         objects.append(road_poly)
