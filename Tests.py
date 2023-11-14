@@ -41,7 +41,10 @@ class MyTestCase2(unittest.TestCase):
         objects = []
         player1: Player = Player("Blue", 0)
         action: Action = Action.BUILD_ROAD
-        bg.edges[0].road = Road(Main.road_poly(bg.nearest_edge(Point(0, 0)), scale).clone(), player1.player_id)
+        first_poly = Main.road_poly(bg.nearest_edge(Point(0, 0)), scale)
+        bg.edges[7].road = Road(first_poly, player1.player_id)
+        first_poly.setFill("Blue")
+        first_poly.draw(win)
 
         while True:
             match action:
@@ -56,7 +59,7 @@ class MyTestCase2(unittest.TestCase):
                     new_center = bg.nearest_edge(Point(abs_coord_x, abs_coord_y)).center
                     if new_center != center:
                         placement_poly.undraw()
-                        placement_poly = Main.road_poly(bg.nearest_edge(Point(abs_coord_x, abs_coord_y)), scale).clone()
+                        placement_poly = Main.road_poly(bg.nearest_edge(Point(abs_coord_x, abs_coord_y)), scale)
                         placement_poly.setFill("Red")
                         placement_poly.draw(win)
                         center = bg.nearest_edge(Point(abs_coord_x, abs_coord_y)).center
