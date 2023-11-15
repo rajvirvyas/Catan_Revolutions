@@ -14,7 +14,7 @@ win = GraphWin("Catan Board", 1000, 700)
 
 class Action(Enum):
     NOTHING: int = 0
-    ROLL_DICE: int = 1how 
+    ROLL_DICE: int = 1
     BUILD_SETTLEMENT: int = 2
     BUILD_CITY: int = 3
     BUILD_ROAD: int = 4
