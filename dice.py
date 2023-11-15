@@ -8,8 +8,9 @@ def roll(label):
 
     printPips = (result.replace('\u2680', '1').replace('\u2681', '2').replace('\u2682', '3').replace('\u2683', '4').replace('\u2684', '5').replace('\u2685', '6'))
 
+    sumPips= int(printPips[0]) + int(printPips[1])
     
-    print("You Rolled a", int(printPips[0]) + int(printPips[1]))
+    print("You Rolled a", sumPips)
     label.config(text=result)
     
- 
+    

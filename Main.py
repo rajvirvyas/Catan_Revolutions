@@ -62,9 +62,17 @@ def build_road(bg: BoardGraph, pos: Point, scale: float, player: Player) -> bool
         return True
     return False
 
+def printDevelopment():
+      for i in Player.dev_dict:
+          print ("You have",Player.dev_dict.get(i), i)
 
 
+def printTrade():
+      print("you cannot trade rn")
 
+def printResources():
+      for i in Player.resources_dict:
+          print ("You have",Player.resources_dict.get(i), i)
 
 
 def main():
@@ -81,14 +89,30 @@ def main():
     player1: Player = Player("Blue", 0)
 
     action: Action = Action.BUILD_SETTLEMENT
+    
 
 # For Dice-----------------------------------------------------------------------------
 
     l1 = Label(win, font=("Helvetica", 150), text='')  # Create a label with empty text
     l1.place(x=800, y=0)
-    b1 = Button(win, text="Roll the Dice!", foreground='blue', command=lambda: roll(l1))
+    b1 = Button(win, text="Roll the Dice!", foreground='blue', command=lambda: [roll(l1)])
     b1.place(x=800, y=0)
 #--------------------------------------------------------------------------------------
+    l2 = Label(win, font=("Helvetica", 150), text='')  # Create a label with empty text
+    l2.place(x=800, y=500)
+    b2 = Button(win, text="Development Cards", foreground='blue', command= lambda: printDevelopment())
+    b2.place(x=800, y=500)
+
+    l3 = Label(win, font=("Helvetica", 150), text='')  # Create a label with empty text
+    l3.place(x=800, y=550)
+    b3 = Button(win, text="Resource Cards", foreground='blue', command= lambda: printResources())
+    b3.place(x=800, y=550)
+
+    l4 = Label(win, font=("Helvetica", 150), text='')  # Create a label with empty text
+    l4.place(x=800, y=600)
+    l4 = Button(win, text="Trade", foreground='blue', command= lambda: printTrade())
+    l4.place(x=800, y=600)
+
 
     while True:
         match action:

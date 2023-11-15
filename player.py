@@ -5,18 +5,12 @@ from board import Vertex, Edge
 
 class Player:
     # Number of resources
-    num_wood: int = 0
-    num_brick: int = 0
-    num_sheep: int = 0
-    num_wheat: int = 0
-    num_rock: int = 0
+    
+    resources_dict = {'wood': 0, 'brick': 0, 'sheep': 0, 'wheat': 0, 'rock': 0}
 
     # Number of each Development Card in hand
-    num_year_of_plenty: int = 0
-    num_monopoly: int = 0
-    num_knight: int = 0  # Num of knights not played
-    num_road_building: int = 0
-
+    dev_dict= {'yearOfPlenty' : 0, 'monopoly' : 0, 'knightsNotPlayed' : 0, 'road_building' : 0}
+  
     # Lists of settlements, cities, and roads
     settlements: List[Vertex] = []
     cities: List[Vertex] = []
