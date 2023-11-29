@@ -6,10 +6,10 @@ from typing import Dict, List
 from result import Result, Ok, Err
 from graphics import Point, Rectangle, Polygon, Text, GraphWin, Circle
 
-MAX_WOOD: int = 4
-MAX_BRICK: int = 3
-MAX_SHEEP: int = 4
-MAX_WHEAT: int = 4
+MAX_LUMBER: int = 4
+MAX_ORE: int = 3
+MAX_WOOL: int = 4
+MAX_GRAIN: int = 4
 MAX_ROCK: int = 3
 
 TWO_MAX: int = 1
@@ -27,10 +27,10 @@ BOARD_SIZE: int = 19
 
 
 class TileType(Enum):
-    WOOD = 0
-    BRICK = 1
-    SHEEP = 2
-    WHEAT = 3
+    LUMBER = 0
+    ORE = 1
+    WOOL = 2
+    GRAIN = 3
     ROCK = 4
     DESERT = 5
 
@@ -295,13 +295,13 @@ def get_hexagon_center(hexagon: Polygon) -> Point:
 # Relates a TileType with a corresponding color, and returns the string for that color.
 def tile_color(tile_type: TileType) -> str:
     match tile_type:
-        case TileType.WOOD:
+        case TileType.LUMBER:
             return "Dark Olive Green"
-        case TileType.BRICK:
+        case TileType.ORE:
             return "Brown"
-        case TileType.SHEEP:
+        case TileType.WOOL:
             return "Green Yellow"
-        case TileType.WHEAT:
+        case TileType.GRAIN:
             return "Gold"
         case TileType.ROCK:
             return "Dim Gray"
@@ -312,14 +312,14 @@ def tile_color(tile_type: TileType) -> str:
 # Relates an int with a corresponding TileType, and returns the TileType
 def assign_tile_type(tile_type: int) -> TileType:
     match tile_type:
-        case TileType.WOOD.value:
-            return TileType.WOOD
-        case TileType.BRICK.value:
-            return TileType.BRICK
-        case TileType.SHEEP.value:
-            return TileType.SHEEP
-        case TileType.WHEAT.value:
-            return TileType.WHEAT
+        case TileType.LUMBER.value:
+            return TileType.LUMBER
+        case TileType.ORE.value:
+            return TileType.ORE
+        case TileType.WOOL.value:
+            return TileType.WOOL
+        case TileType.GRAIN.value:
+            return TileType.GRAIN
         case TileType.ROCK.value:
             return TileType.ROCK
         case _:
@@ -327,10 +327,10 @@ def assign_tile_type(tile_type: int) -> TileType:
 
 
 def generate_tile_types(board_size: int) -> list[TileType]:
-    wood_count: int = 0
-    brick_count: int = 0
-    sheep_count: int = 0
-    wheat_count: int = 0
+    lumber_count: int = 0
+    ore_count: int = 0
+    wool_count: int = 0
+    grain_count: int = 0
     rock_count: int = 0
 
     type_list: list[TileType] = []
@@ -343,25 +343,25 @@ def generate_tile_types(board_size: int) -> list[TileType]:
         valid_type: bool = False
         while not valid_type:
             match random.randint(0, 4):
-                case TileType.WOOD.value:
-                    if wood_count < MAX_WOOD:
-                        type_list.append(TileType.WOOD)
-                        wood_count += 1
+                case TileType.LUMBER.value:
+                    if lumber_count < MAX_LUMBER:
+                        type_list.append(TileType.LUMBER)
+                        lumber_count += 1
                         valid_type = True
-                case TileType.BRICK.value:
-                    if brick_count < MAX_BRICK:
-                        type_list.append(TileType.BRICK)
-                        brick_count += 1
+                case TileType.ORE.value:
+                    if ore_count < MAX_ORE:
+                        type_list.append(TileType.ORE)
+                        ore_count += 1
                         valid_type = True
-                case TileType.SHEEP.value:
-                    if sheep_count < MAX_SHEEP:
-                        type_list.append(TileType.SHEEP)
-                        sheep_count += 1
+                case TileType.WOOL.value:
+                    if wool_count < MAX_WOOL:
+                        type_list.append(TileType.WOOL)
+                        wool_count += 1
                         valid_type = True
-                case TileType.WHEAT.value:
-                    if wheat_count < MAX_WHEAT:
-                        type_list.append(TileType.WHEAT)
-                        wheat_count += 1
+                case TileType.GRAIN.value:
+                    if grain_count < MAX_GRAIN:
+                        type_list.append(TileType.GRAIN)
+                        grain_count += 1
                         valid_type = True
                 case TileType.ROCK.value:
                     if rock_count < MAX_ROCK:

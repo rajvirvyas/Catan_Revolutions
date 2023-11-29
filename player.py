@@ -6,11 +6,10 @@ from board import Vertex, Edge
 class Player:
     # Number of resources
     
-    resources_dict = {'wood': 0, 'brick': 0, 'sheep': 0, 'wheat': 0, 'rock': 0}
+    resources_dict = {'lumber': 0, 'ore': 0, 'wool': 0, 'grain': 0, 'rock': 0}
 
-    # Number of each Development Card in hand
-    dev_dict= {'yearOfPlenty' : 0, 'monopoly' : 0, 'knightsNotPlayed' : 0, 'road_building' : 0}
-  
+    # Number of each Influence Tokens
+    influenceTokens=5
     # Lists of settlements, cities, and roads
     settlements: List[Vertex] = []
     cities: List[Vertex] = []
