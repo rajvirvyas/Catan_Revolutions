@@ -5,6 +5,11 @@ from board import Board, BoardGraph, Edge
 from graphics import *
 from tkinter import *
 from player import Player
+from trade import *
+
+player1: Player = Player("Red", 1) # Does not accurately connect chosen color to player
+player2: Player = Player("Blue", 2) # does not connect chosen color to player
+bank: Player = Player("Yellow", 0)
 
 #--------------------------------------------------------------------------------------
 def start_menu():
@@ -131,15 +136,16 @@ def roll(label, text_widget):
 
 
 def printTokens(text_widget):
-      update_chat_log(text_widget, "You have 5 trade tokens\nYou can...\n1.Force Trade\n2.Play Mercenary\n3.Curse Opponent\n")
+      update_chat_log(text_widget, "You have 5 influence tokens\nYou can...\n1.Force Trade\n2.Play Mercenary\n3.Curse Opponent\n")
 
 def printTrade(text_widget):
-      update_chat_log(text_widget, "You cant trade rn\n")
+      
+      update_chat_log(text_widget, "Which resource do you want to trade? Enter as 'give,get'\nBrick\nGrain\nLumber\nWool\nRock\n")
 
 def printResources(text_widget):
     message = ""
-    for i in Player.resources_dict:
-        message += f"You have {Player.resources_dict.get(i)} {i}\n"
+    for i in player1.resources_dict:
+        message += f"You have {player1.resources_dict.get(i)} {i}\n"
     update_chat_log(text_widget, message)
 
 def printAIAssist(text_widget):
@@ -147,9 +153,6 @@ def printAIAssist(text_widget):
 
 def printEnd(text_widget):
       update_chat_log(text_widget, "Turn ended\n")
-
-
-
 
  
 
@@ -164,19 +167,14 @@ def main():
     placement_circle_drawn: bool = False
     objects = []
 
-    player1: Player = Player("Red", 1) # Does not accurately connect chosen color to player
-    player2: Player = Player("Blue", 2) # does not connect chosen color to player
    
-
-    bank: Player = Player("Yellow", 0)
-
     
 
-    # print(bank.resources_dict)
 
-    # for key,value in bank.resources_dict.items():
-    #     bank.resources_dict[key] +=19
-    # print(bank.resources_dict)
+    #initialize bank
+    for key in bank.resources_dict.keys():
+        bank.resources_dict[key] +=19
+    
 
     action: Action = Action.BUILD_SETTLEMENT
     
@@ -213,32 +211,11 @@ def main():
     #update_chat_log(chat_text, f'BANK is {bank.color}\n')
 
 # Trading------------------------------------------------------------------------------
-   
-    # print("player1",player1.resources_dict)
-    # print("player2",player2.resources_dict)
-    # for key,value in player2.resources_dict.items():
-    #     player2.resources_dict[key] = value + 10
-    
-    # print("player2",player2.resources_dict)
-    # print("player1",player1.resources_dict)
-    # def forced_trade():
-    #     # Check if player2 has any resources
-    #     if not player2.resources_dict:
-    #         print("Player2 has no resources to trade.")
-    #         return
-        
-    #     trade_key, trade_value = random.choice(list(player2.resources_dict.items()))
-        
-    #     # Assign the value to the same key in player1
-    #     if trade_key in player1.resources_dict:
-    #         player1.resources_dict[trade_key] = trade_value
-    #         player2.resources_dict[trade_key] -=trade_value
-    #         # print("P1 has", player1.resources_dict)
-    #         # print("P2 has", player2.resources_dict)
-    #         return(f"{trade_value} {trade_key} from Player2 to Player1.")
-    #     else:
-    #         return(f"Player1 does not have the {trade_key} to receive the trade.")
-        
+   #Initialize Players with values
+    for key in player2.resources_dict.keys():
+         player2.resources_dict[key] += 10
+    for key in player1.resources_dict.keys():
+         player1.resources_dict[key] += 8       
 
 #--------------------------------------------------------------------------------------
 
@@ -281,24 +258,175 @@ def main():
 
     def send_message():
         user_input = user_entry.get()
-        if user_input=='1':
-            update_chat_log(chat_text,"Gunship Diplomacy\nWhich two cards would you like to trade (enter with commas)\nA)Ore\nB)Grain\nC)Lumber\nD)Wool\nE)Rock\n")
+        if  user_input=='1':
+            update_chat_log(chat_text,"Gunship Diplomacy\nWhich two cards would you like to trade (enter with commas)\nA)Brick\nB)Grain\nC)Lumber\nD)Wool\nE)Rock\n")
         elif user_input=='2':
-            update_chat_log(chat_text,"Hired Muscle\nRobber Ran\nStole 1 Rock\n")
+            stolen=steal(player2,player1)
+            update_chat_log(chat_text,f"Hired Muscle\nRobber Ran\n{stolen}\n")
         elif user_input=='3':
             update_chat_log(chat_text,"Poor Harvest\nPlayer 2 will get half resources next roll\n")
+       
+       # Forced Trades------------------------------------------------------------------------------------
+        elif user_input.lower()=="a,a":
+            given1="brick"
+            given2="brick"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 2 {given1}\nReceived {gotten}\n")
+        elif user_input.lower()=='a,b' or user_input.lower()=='b,a':
+            given1="brick"
+            given2="grain"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 1 {given1} and {given2}\nReceived {gotten}\n")
+        elif user_input.lower()=='a,c' or user_input.lower()=='c,a':
+            given1="brick"
+            given2="lumber"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 1 {given1} and {given2}\nReceived {gotten}\n")
+        elif user_input.lower()=='a,d' or user_input.lower()=='d,a':
+            given1="brick"
+            given2="wool"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 1 {given1} and {given2}\nReceived {gotten}\n")
+        elif user_input.lower()=='a,e' or user_input.lower()=='e,a':
+            given1="brick"
+            given2="rock"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 1 {given1} and {given2}\nReceived {gotten}\n")
+        elif user_input.lower()=='b,b':
+            given1="grain"
+            given2="grain"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 2 {given1}\nReceived {gotten}\n")
+        elif user_input.lower()=='b,c' or user_input.lower()=='c,b':
+            given1="grain"
+            given2="lumber"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 1 {given1} and {given2}\nReceived {gotten}\n")
+        elif user_input.lower()=='b,d' or user_input.lower()=='d,b':
+            given1="grain"
+            given2="wool"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 1 {given1} and {given2}\nReceived {gotten}\n")
+        elif user_input.lower()=='b,e' or user_input.lower()=='e,b':
+            given1="grain"
+            given2="rock"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 1 {given1} and {given2}\nReceived {gotten}\n")
+        elif user_input.lower()=='c,c':
+            given1="lumber"
+            given2="lumber"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 2 {given1}\nReceived {gotten}\n")
+        elif user_input.lower()=='c,d' or user_input.lower()=='d,c':
+            given1="lumber"
+            given2="wool"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 1 {given1} and {given2}\nReceived {gotten}\n")
+        elif user_input.lower()=='c,e' or user_input.lower()=='e,c':
+            given1="lumber"
+            given2="rock"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 1 {given1} and {given2}\nReceived {gotten}\n")
+        elif user_input.lower()=='d,d':
+            given1="wool"
+            given2="wool"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 2 {given1}\nReceived {gotten}\n")
+        elif user_input.lower()=='d,e' or user_input.lower()=='e,d':
+            given1="wool"
+            given2="rock"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 1 {given1} and {given2}\nReceived {gotten}\n")
+        elif user_input.lower()=='e,e':
+            given1="rock"
+            given2="rock"
+            gotten=forced_trade(player2,player1,given1,given2)
+            update_chat_log(chat_text, f"\nGave 1 {given1} and {given2}\nReceived {gotten}\n")
+        # ------------------------------------------------------------------------------------
 
-        elif user_input=='A,B':
-    
-            # print("p1 has",player1.resources_dict)
-            # for i in player1.resources_dict:
-            #     if i=="ore" or i=="grain":
-            #         player1.resources_dict[i] -=1
-            # gotten=forced_trade()
-            # print("p1 (post trade) has",player1.resources_dict)
-            update_chat_log(chat_text, f"\nGave 1 Ore and 1 Grain\nReceived 1 Wool\n")
+        #---Bank trading----------------------------------------------------------------------
+        elif user_input.lower()=="brick,grain":
+            gotten=trade(player1,player2,bank,"brick", "grain")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 brick\nReceived 1 grain\n")
+        elif user_input.lower()=="brick,lumber":
+            gotten=trade(player1,player2,bank,"brick", "lumber")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 brick\nReceived 1 lumber\n")
+        elif user_input.lower()=="brick,wool":
+            gotten=trade(player1,player2,bank,"brick", "wool")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 brick\nReceived 1 wool\n")
+        elif user_input.lower()=="brick,rock":
+            gotten=trade(player1,player2,bank,"brick", "rock")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 brick\nReceived 1 rock\n")
+        elif user_input.lower()=="grain,brick":
+            gotten=trade(player1,player2,bank,"grain", "brick")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 grain\nReceived 1 brick\n")
+        elif user_input.lower()=="grain,lumber":
+            gotten=trade(player1,player2,bank,"grain", "lumber")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 grain\nReceived 1 lumber\n")
+        elif user_input.lower()=="grain,wool":
+            gotten=trade(player1,player2,bank,"grain", "wool")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 grain\nReceived 1 wool\n")
+        elif user_input.lower()=="grain,rock":
+            gotten=trade(player1,player2,bank,"grain", "rock")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 grain\nReceived 1 rock\n")
+        elif user_input.lower()=="lumber,brick":
+            gotten=trade(player1,player2,bank,"lumber", "brick")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 lumber\nReceived 1 brick\n")
+        elif user_input.lower()=="lumber,grain":
+            gotten=trade(player1,player2,bank,"lumber", "grain")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 lumber\nReceived 1 grain\n")
+        elif user_input.lower()=="lumber,wool":
+            gotten=trade(player1,player2,bank,"lumber", "wool")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 lumber\nReceived 1 wool\n")
+        elif user_input.lower()=="lumber,rock":
+            gotten=trade(player1,player2,bank,"lumber", "rock")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 lumber\nReceived 1 rock\n")
+        elif user_input.lower()=="wool,brick":
+            gotten=trade(player1,player2,bank,"wool", "brick")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 wool\nReceived 1 brick\n")
+        elif user_input.lower()=="wool,grain":
+            gotten=trade(player1,player2,bank,"wool", "grain")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 wool\nReceived 1 grain\n")
+        elif user_input.lower()=="wool,lumber":
+            gotten=trade(player1,player2,bank,"wool", "lumber")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 wool\nReceived 1 lumber\n")
+        elif user_input.lower()=="wool,rock":
+            gotten=trade(player1,player2,bank,"wool", "rock")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 wool\nReceived 1 rock\n")
+        elif user_input.lower()=="rock,brick":
+            gotten=trade(player1,player2,bank,"rock", "brick")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 rock\nReceived 1 brick\n")
+        elif user_input.lower()=="rock,grain":
+            gotten=trade(player1,player2,bank,"rock", "grain")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 rock\nReceived 1 grain\n") 
+        elif user_input.lower()=="rock,lumber":
+            gotten=trade(player1,player2,bank,"rock", "lumber")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 rock\nReceived 1 lumber\n")
+        elif user_input.lower()=="rock,wool":
+            gotten=trade(player1,player2,bank,"rock", "wool")
+            update_chat_log(bank_text, gotten)
+            update_chat_log(chat_text, f"\nGave 4 rock\nReceived 1 wool\n")
+        #---------------------------------------------------------------------------------------
         
-
         else:
             update_chat_log(chat_text,user_input)
         user_entry.delete(0, 'end')  # Clear the user entry field
