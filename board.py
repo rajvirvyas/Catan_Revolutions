@@ -202,13 +202,13 @@ class BoardGraph:
                     case TileType.BRICK:
                         score += resource_scores.index("brick")
                     case TileType.LUMBER:
-                        resource_scores.index("lumber")
+                        score += resource_scores.index("lumber")
                     case TileType.ROCK:
-                        resource_scores.index("rock")
+                        score += resource_scores.index("rock")
                     case TileType.GRAIN:
-                        resource_scores.index("grain")
+                        score += resource_scores.index("grain")
                     case TileType.WOOL:
-                        resource_scores.index("wool")
+                        score += resource_scores.index("wool")
                 match tile.num:
                     case 2 | 12:
                         score += TWO_TWELVE_SCORE
@@ -233,7 +233,6 @@ class BoardGraph:
             results[v] = score
 
         return results
-
 
 
 class Board:
