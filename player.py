@@ -21,4 +21,5 @@ class Player:
         self.color = color
         self.player_id = player_id
         self.resources_dict = {'lumber': 0, 'brick': 0, 'wool': 0, 'grain': 0, 'rock': 0}
+        self.score= 0
         self.influenceTokens=5

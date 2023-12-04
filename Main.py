@@ -75,7 +75,9 @@ def start_menu():
 
 ROAD_WIDTH: int = 10
 
-
+#initialize bank
+for key in bank.resources_dict.keys():
+        bank.resources_dict[key] +=19
 
 
 class Action(Enum):
@@ -144,23 +146,28 @@ def update_chat_log(text_widget, message):
     text_widget.see('end')
 
 def roll(label, text_widget):
+    global current_player
     dice=['\u2680','\u2681','\u2682','\u2683','\u2684','\u2685']
     result= (f'{random.choice(dice)}{random.choice(dice)}')
 
     printPips = (result.replace('\u2680', '1').replace('\u2681', '2').replace('\u2682', '3').replace('\u2683', '4').replace('\u2684', '5').replace('\u2685', '6'))
 
     sumPips= int(printPips[0]) + int(printPips[1])
-    
-    update_chat_log(text_widget, f"You rolled a {sumPips}\n")
+    if sumPips==7:
+        update_chat_log(text_widget, f"You rolled a {sumPips}\nFace the ROBBER!\n")
+        stolen = steal(player2, player1) if current_player == 1 else steal(player1, player2)
+    else:
+        update_chat_log(text_widget, f"You rolled a {sumPips}\n")
                     
     label.config(text=result)
+    
 
 
 def printTokens(text_widget):
       update_chat_log(text_widget, "You have 5 influence tokens\nYou can...\n1.Force Trade\n2.Play Mercenary\n3.Curse Opponent\n")
 
 def printTrade(text_widget):
-      
+    
       update_chat_log(text_widget, "Which resource do you want to trade? Enter as 'give,get'\nBrick\nGrain\nLumber\nWool\nRock\n")
 
 def printResources(text_widget):
@@ -178,13 +185,21 @@ def printAIAssist(text_widget):
       update_chat_log(text_widget, "Beep boop\n")
 
 def printBuild(text_widget):
-      update_chat_log(text_widget, "Building time!\n")      
+    player1.score +=1
+    player2.score +=2    
 
 def printEnd(text_widget):
     switch_turn()
     update_chat_log(text_widget, f"End Turn\nIt's now Player {current_player}'s turn.\n")
     # update_chat_log(text_widget, "Turn ended\n")
 
+def printBanktext(bank_text):
+    message = ""
+    for i in bank.resources_dict:
+            message += f"{bank.resources_dict.get(i)} {i}\n"
+            
+    update_chat_log(bank_text, message=f'Treasury:')
+    update_chat_log(bank_text, message=f'{message}')
  
 
 def main():
@@ -204,9 +219,7 @@ def main():
     
 
 
-    #initialize bank
-    for key in bank.resources_dict.keys():
-        bank.resources_dict[key] +=19
+    
     
 
     action: Action = Action.BUILD_SETTLEMENT
@@ -215,10 +228,10 @@ def main():
     chat_text = Text(win, height=20, width=40, wrap='word', bg= 'white',fg='black')
     chat_text.place(x=800, y=0)
 
-    bank_text = Text(win, height=5, width=40, wrap='word', bg='gold', fg='black')
-    bank_text.place(x=800, y=325)
+    bank_text = Text(win, height=10,font=("Impact") ,width=50, wrap='word', bg='gold', fg='black')
+    bank_text.place(x=800, y=300)
 
-    victory_text= Text(win, height=4, width=40, wrap='word', bg='springgreen2', fg='black',font=('Impact', ))
+    victory_text= Text(win, height=4, width=50, wrap='word', bg='springgreen2', fg='black',font=('Impact', ))
     victory_text.place(x=800, y=400)
    
 
@@ -235,12 +248,11 @@ def main():
     chat_text.config(yscrollcommand=scrollbar.set)
 
     update_chat_log(chat_text,message=None)
-    update_chat_log(bank_text, message=f'Treasury holds\n {bank.resources_dict}\n')
-    update_chat_log(chat_text, f'P1 is {player1.color}\n')
-    update_chat_log(chat_text, f'P2 is {player2.color}\n')
+    printBanktext(bank_text)
+    #printBuild(chat_text)
     update_chat_log(victory_text, "Points\n")
-    update_chat_log(victory_text, message = f"P1: {player1.score}".ljust(30) + f"P2: {player2.score}".rjust(50)
-)
+    update_chat_log(victory_text, message = f"P1: {player1.score}".ljust(30) + f"P2: {player2.score}".rjust(50))
+
     #update_chat_log(chat_text, f'BANK is {bank.color}\n')
 
 # Trading------------------------------------------------------------------------------
@@ -258,6 +270,8 @@ def main():
     l1.place(x=20, y=0)
     b1 = Button(win, text="Roll the Dice!", foreground='blue', background="skyblue",command=lambda: [roll(l1, chat_text)])
     b1.place(x=20, y=0)
+
+
 #---------------------------------------------------------------------------------------
 #left buttons-----
     l2 = Label(win, font=("Helvetica", 150),  bg="skyblue",text='')  # Create a label with empty text
@@ -304,9 +318,12 @@ def main():
         if  user_input=='1':
             update_chat_log(chat_text,"Gunship Diplomacy\nWhich two cards would you like to trade (enter with commas)\nA)Brick\nB)Grain\nC)Lumber\nD)Wool\nE)Rock\n")
         elif user_input=='2':
-            # stolen=steal(player2,player1)
-            stolen = steal(player2, player1) if current_player == 1 else steal(player1, player2)
-            update_chat_log(chat_text,f"Hired Muscle\nRobber Ran\n{stolen}\n")
+            #needs a check for if robber present
+            #then update_chat_log(chat_text,f"Hired Muscle\nRobber Scared Off\n")
+            #set robber to not present
+            #else:
+            #return "cant hire mercenaries because no robber present"
+            print("wow")
         elif user_input=='3':
             update_chat_log(chat_text,"Poor Harvest\nPlayer 2 will get half resources next roll\n")
        
