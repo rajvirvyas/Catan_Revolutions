@@ -10,7 +10,7 @@ from graphics import Point, Rectangle, Polygon, Text, GraphWin, Circle
 from player import Player
 
 MAX_LUMBER: int = 4
-MAX_ORE: int = 3
+MAX_BRICK: int = 3
 MAX_WOOL: int = 4
 MAX_GRAIN: int = 4
 MAX_ROCK: int = 3
@@ -287,8 +287,8 @@ def assign_tile_type(tile_type: int) -> TileType:
     match tile_type:
         case TileType.LUMBER.value:
             return TileType.LUMBER
-        case TileType.ORE.value:
-            return TileType.ORE
+        case TileType.BRICK.value:
+            return TileType.BRICK
         case TileType.WOOL.value:
             return TileType.WOOL
         case TileType.GRAIN.value:
@@ -301,7 +301,7 @@ def assign_tile_type(tile_type: int) -> TileType:
 
 def generate_tile_types(board_size: int) -> list[TileType]:
     lumber_count: int = 0
-    ore_count: int = 0
+    brick_count: int = 0
     wool_count: int = 0
     grain_count: int = 0
     rock_count: int = 0
@@ -321,10 +321,10 @@ def generate_tile_types(board_size: int) -> list[TileType]:
                         type_list.append(TileType.LUMBER)
                         lumber_count += 1
                         valid_type = True
-                case TileType.ORE.value:
-                    if ore_count < MAX_ORE:
-                        type_list.append(TileType.ORE)
-                        ore_count += 1
+                case TileType.BRICK.value:
+                    if brick_count < MAX_BRICK:
+                        type_list.append(TileType.BRICK)
+                        brick_count += 1
                         valid_type = True
                 case TileType.WOOL.value:
                     if wool_count < MAX_WOOL:

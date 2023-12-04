@@ -4,10 +4,6 @@ from board_elements import Vertex, Edge, TileType
 
 
 class Player:
-    # Number of resources
-
-    resources_dict = {'lumber': 0, 'ore': 0, 'wool': 0, 'grain': 0, 'rock': 0}
-
     # Number of each Influence Tokens
     influenceTokens: int
     # Lists of settlements, cities, and roads
@@ -21,10 +17,12 @@ class Player:
     score: int = 0
     color: str
     player_id: int
+    resources_dict: dict
 
     def __init__(self, color: str, player_id):
         self.color = color
         self.player_id = player_id
+        self.resources_dict = {'lumber': 0, 'brick': 0, 'wool': 0, 'grain': 0, 'rock': 0}
         self.influenceTokens = 5
         self.mercenaries_played = 0
 
