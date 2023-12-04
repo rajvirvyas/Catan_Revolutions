@@ -27,13 +27,13 @@ class Player:
         self.mercenaries_played = 0
 
     def resource_importance(self) -> List[str]:
-        resource_scores: Dict[str, int] = {"ore": 0, "lumber": 0, "grain": 0, "wool": 0, "rock": 0, "desert": 0}
+        resource_scores: Dict[str, int] = {"brick": 0, "lumber": 0, "grain": 0, "wool": 0, "rock": 0, "desert": 0}
 
         for v in self.settlements:
             for t in v.adj_tiles:
                 match t.tile_type:
-                    case TileType.ORE:
-                        resource_scores["ore"] += 1
+                    case TileType.BRICK:
+                        resource_scores["brick"] += 1
                     case TileType.LUMBER:
                         resource_scores["lumber"] += 1
                     case TileType.GRAIN:

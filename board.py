@@ -199,8 +199,8 @@ class BoardGraph:
             score = 0
             for tile in v.adj_tiles:
                 match tile.tile_type:
-                    case TileType.ORE:
-                        score += resource_scores.index("ore")
+                    case TileType.BRICK:
+                        score += resource_scores.index("brick")
                     case TileType.LUMBER:
                         resource_scores.index("lumber")
                     case TileType.ROCK:

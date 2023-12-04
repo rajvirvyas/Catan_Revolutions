@@ -6,7 +6,7 @@ from graphics import Polygon, Text, Point
 
 class TileType(Enum):
     LUMBER = 0
-    ORE = 1
+    BRICK = 1
     WOOL = 2
     GRAIN = 3
     ROCK = 4
@@ -111,7 +111,7 @@ def tile_color(tile_type: TileType) -> str:
     match tile_type:
         case TileType.LUMBER:
             return "Dark Olive Green"
-        case TileType.ORE:
+        case TileType.BRICK:
             return "Brown"
         case TileType.WOOL:
             return "Green Yellow"
