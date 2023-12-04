@@ -135,8 +135,8 @@ def switch_turn():
 
 
 def update_chat_log(text_widget, message):
-    if message is None:
-        message = "Welcome to Catan Revolutions!\nPlayer 1 can roll dice to get started.\n"
+    # if message is None:
+    #     message = "Welcome to Catan Revolutions!\nPlayer 1 can roll dice to get started.\n"
 
     # Insert the message into the text widget
     text_widget.config(state='normal')
@@ -158,12 +158,12 @@ def roll(label, text_widget) -> int:
 
     sumPips = int(printPips[0]) + int(printPips[1])
 
-    update_chat_log(text_widget, f"You rolled a {sumPips}\n")
+    #update_chat_log(text_widget, f"You rolled a {sumPips}\n")
 
     sumPips= int(printPips[0]) + int(printPips[1])
     if sumPips==7:
-        update_chat_log(text_widget, f"You rolled a {sumPips}\nFace the ROBBER!\n")
         stolen = steal(player2, player1) if current_player == 1 else steal(player1, player2)
+        update_chat_log(text_widget, f"You rolled a {sumPips}\nStole {stolen}\n")
     else:
         update_chat_log(text_widget, f"You rolled a {sumPips}\n")
                     
@@ -227,64 +227,6 @@ def give_resources(player: Player):
                 player.resources_dict[tile_type] += amount
                 bank.resources_dict[tile_type] -= amount
 
-
-
-
-
-def tile_type_to_str(tp: TileType) -> str:
-    match tp:
-        case TileType.LUMBER:
-            return "lumber"
-        case TileType.ROCK:
-            return "rock"
-        case TileType.BRICK:
-            return "brick"
-        case TileType.WOOL:
-            return "wool"
-        case TileType.GRAIN:
-            return "grain"
-        case _:
-            return "desert"
-
-
-def give_resources(player: Player):
-    print(roll_result.get())
-    for s in player.settlements:
-        for t in s.adj_tiles:
-            if t.num == roll_result.get() and t.tile_type != TileType.DESERT and not t.has_bishop:
-                tile_type = tile_type_to_str(t.tile_type)
-                amount = 0
-                if s.settlement.is_city:
-                    if bank.resources_dict[tile_type] >= 2:
-                        amount = 2
-                    elif bank.resources_dict[tile_type] == 1:
-                        amount = 1
-                else:
-                    if bank.resources_dict[tile_type] > 0:
-                        amount = 1
-                player.resources_dict[tile_type] += amount
-                bank.resources_dict[tile_type] -= amount
-
-    if player.player_id == player1.player_id:
-        player = player2
-    else:
-        player = player1
-
-    for s in player.settlements:
-        for t in s.adj_tiles:
-            if t.num == roll_result.get() and t.tile_type != TileType.DESERT and not t.has_bishop:
-                tile_type = tile_type_to_str(t.tile_type)
-                amount = 0
-                if s.settlement.is_city:
-                    if bank.resources_dict[tile_type] >= 2:
-                        amount = 2
-                    elif bank.resources_dict[tile_type] == 1:
-                        amount = 1
-                else:
-                    if bank.resources_dict[tile_type] > 0:
-                        amount = 1
-                player.resources_dict[tile_type] += amount
-                bank.resources_dict[tile_type] -= amount
 def build_settlement(player: Player, win: GraphWin, board: Board, objects, initial_settlements: bool, text_widget):
     if not initial_settlements and (player.resources_dict["wood"] < 1 or player.resources_dict["brick"] < 1 or player.resources_dict["wool"] < 1
             or player.resources_dict["grain"] < 1):
@@ -337,40 +279,6 @@ def build_road(player: Player, win: GraphWin, board: Board, objects):
             objects.append(placement_poly)
             return
 
-
-def game_setup(win: GraphWin, chat_text: Text, board: Board, objects, b1: Button):
-    message = "Welcome to Catan Revolutions!\nPlayer 1 can roll the dice to get started.\n"
-    update_chat_log(chat_text, message)
-    b1.wait_variable(roll_result)
-    message = "Player 2 can roll the dice.\n"
-    update_chat_log(chat_text, message)
-    b1.wait_variable(roll_result)
-
-    for i in range(2):
-        update_chat_log(chat_text, "Player 1, place a starting settlement and road.")
-        build_settlement(player1, win, board, objects, True, chat_text)
-        build_road(player1, win, board, objects)
-        update_chat_log(chat_text, "Player 2, place a starting settlement and road.")
-        build_settlement(player2, win, board, objects, True, chat_text)
-        build_road(player2, win, board, objects)
-
-    message = "We will now roll for starting resources.\nPlayer 1 please roll the dice.\n"
-    update_chat_log(chat_text, message)
-    b1.wait_variable(roll_result)
-    while roll_result.get() == 7:
-        message = "Please roll again."
-        update_chat_log(chat_text, message)
-        b1.wait_variable(roll_result)
-    give_resources(player1)
-    first_roll = roll_result.get()
-    message = "Player 2 please roll the dice.\n"
-    update_chat_log(chat_text, message)
-    b1.wait_variable(roll_result)
-    while roll_result.get() == 7 and roll_result.get() != first_roll:
-        message = "Please roll again."
-        update_chat_log(chat_text, message)
-        b1.wait_variable(roll_result)
-    give_resources(player2)
 
 def printTokens(text_widget):
     update_chat_log(text_widget,
@@ -527,7 +435,7 @@ def main():
     bank_text = Text(win, height=10,font=("Impact") ,width=50, wrap='word', bg='gold', fg='black')
     bank_text.place(x=800, y=300)
 
-    victory_text= Text(win, height=4, width=50, wrap='word', bg='springgreen2', fg='black',font=('Impact', ))
+    victory_text= Text(win, height=4, width=50, wrap='word', bg='springgreen2', fg='black',font=('Impact'))
     victory_text.place(x=800, y=400)
 
     box = Label(win, font=("Helvetica", 55), text='', bg='black')  # Create a label with empty text
@@ -541,10 +449,10 @@ def main():
     scrollbar.place(x=1085, y=0, height=265)
     chat_text.config(yscrollcommand=scrollbar.set)
 
-    update_chat_log(chat_text,message=None)
+    # update_chat_log(chat_text,message=None)
     printBanktext(bank_text)
     #printBuild(chat_text)
-    update_chat_log(chat_text, message=None)
+    #update_chat_log(chat_text, message=None)
     update_chat_log(bank_text, message=f'Treasury holds\n {bank.resources_dict}\n')
     update_chat_log(chat_text, f'P1 is {player1.color}\n')
     update_chat_log(chat_text, f'P2 is {player2.color}\n')
@@ -555,10 +463,10 @@ def main():
 
 # Trading------------------------------------------------------------------------------
    #Initialize Players with values
-    for key in player2.resources_dict.keys():
-         player2.resources_dict[key] += 10
-    for key in player1.resources_dict.keys():
-         player1.resources_dict[key] += 8       
+    # for key in player2.resources_dict.keys():
+    #      player2.resources_dict[key] += 10
+    # for key in player1.resources_dict.keys():
+    #      player1.resources_dict[key] += 8       
 
 #--------------------------------------------------------------------------------------
 
@@ -585,25 +493,25 @@ def main():
 
     l4 = Label(win, font=("Helvetica", 150), bg="skyblue", text='')  # Create a label with empty text
     l4.place(x=20, y=600)
-    l4 = Button(win, text="Trade", foreground='blue', bg="skyblue", command=lambda: printTrade(chat_text))
-    l4.place(x=20, y=600)
+    b4 = Button(win, text="Trade", foreground='blue', bg="skyblue", command=lambda: printTrade(chat_text))
+    b4.place(x=20, y=600)
 
     l7 = Label(win, font=("Helvetica", 150), bg="skyblue", text='')  # Create a label with empty text
     l7.place(x=20, y=650)
-    l7 = Button(win, text="Build", foreground='blue', bg="skyblue", command=lambda: printBuild(chat_text))
-    l7.place(x=20, y=650)
+    b7 = Button(win, text="Build", foreground='blue', bg="skyblue", command=lambda: printBuild(chat_text))
+    b7.place(x=20, y=650)
 
     # right buttons----
 
     l5 = Label(win, font=("Helvetica", 150), bg="skyblue", text='')  # Create a label with empty text
     l5.place(x=1010, y=500)
-    l5 = Button(win, text="End Turn", foreground='blue', bg="skyblue", command=lambda: printEnd(chat_text))
-    l5.place(x=1010, y=500)
+    b5 = Button(win, text="End Turn", foreground='blue', bg="skyblue", command=lambda: printEnd(chat_text))
+    b5.place(x=1010, y=500)
 
     l6 = Label(win, font=("Helvetica", 150), bg="skyblue", text='')  # Create a label with empty text
     l6.place(x=1010, y=550)
-    l6 = Button(win, text="AI Assist", foreground='blue', bg="skyblue", command=lambda: printAIAssist(chat_text))
-    l6.place(x=1010, y=550)
+    b6 = Button(win, text="AI Assist", foreground='blue', bg="skyblue", command=lambda: printAIAssist(chat_text))
+    b6.place(x=1010, y=550)
 
     def send_message():
         user_input = user_entry.get()
@@ -616,7 +524,9 @@ def main():
             #set robber to not present
             #else:
             #return "cant hire mercenaries because no robber present"
-            print("wow")
+            stolen = steal(player2, player1) if current_player == 1 else steal(player1, player2)
+            update_chat_log(chat_text,
+                            f"Muscle For Hire\nStole {stolen}\n")
         elif user_input == '3':
             update_chat_log(chat_text, "Poor Harvest\nPlayer 2 will get half resources next roll\n")
 
@@ -855,7 +765,7 @@ def main():
 
     player: Player = player1
     game_setup(win, chat_text, board, objects, b1)
-    start_menu()
+    
     while not win.isClosed():
         match current_player:
             case player1.player_id:
