@@ -177,6 +177,9 @@ def printResources(text_widget):
 def printAIAssist(text_widget):
       update_chat_log(text_widget, "Beep boop\n")
 
+def printBuild(text_widget):
+      update_chat_log(text_widget, "Building time!\n")      
+
 def printEnd(text_widget):
     switch_turn()
     update_chat_log(text_widget, f"End Turn\nIt's now Player {current_player}'s turn.\n")
@@ -251,11 +254,12 @@ def main():
 
 # For Dice-----------------------------------------------------------------------------
 
-    l1 = Label(win, font=("Helvetica", 150),  bg="skyblue",text='')  # Create a label with empty text
+    l1 = Label(win, font=("Helvetica", 150), fg="firebrick", bg="skyblue",text='')  # Create a label with empty text
     l1.place(x=20, y=0)
     b1 = Button(win, text="Roll the Dice!", foreground='blue', background="skyblue",command=lambda: [roll(l1, chat_text)])
     b1.place(x=20, y=0)
-#--------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------
+#left buttons-----
     l2 = Label(win, font=("Helvetica", 150),  bg="skyblue",text='')  # Create a label with empty text
     l2.place(x=20, y=500)
     b2 = Button(win, text="Infleunce Tokens", foreground='blue', bg="skyblue", command= lambda: printTokens(chat_text))
@@ -271,6 +275,13 @@ def main():
     l4 = Button(win, text="Trade", foreground='blue', bg="skyblue", command= lambda: printTrade(chat_text))
     l4.place(x=20, y=600)
 
+    l7 = Label(win, font=("Helvetica", 150),  bg="skyblue",text='')  # Create a label with empty text
+    l7.place(x=20, y=650)
+    l7 = Button(win, text="Build", foreground='blue', bg="skyblue", command= lambda: printBuild(chat_text))
+    l7.place(x=20, y=650)
+
+    #right buttons----
+
     l5 = Label(win, font=("Helvetica", 150), bg="skyblue",text='')  # Create a label with empty text
     l5.place(x=1010, y=500)
     l5 = Button(win, text="End Turn", foreground='blue', bg="skyblue", command= lambda: printEnd(chat_text))
@@ -280,6 +291,8 @@ def main():
     l6.place(x=1010, y=550)
     l6 = Button(win, text="AI Assist", foreground='blue', bg="skyblue", command= lambda: printAIAssist(chat_text))
     l6.place(x=1010, y=550)
+
+    
 
 
 
