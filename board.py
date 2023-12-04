@@ -2,9 +2,12 @@ import math
 import random
 import sys
 from enum import Enum
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from result import Result, Ok, Err
+
+from board_elements import TileType, Tile, Vertex, Edge
 from graphics import Point, Rectangle, Polygon, Text, GraphWin, Circle
+from player import Player
 
 MAX_LUMBER: int = 4
 MAX_BRICK: int = 3
@@ -25,89 +28,12 @@ TWELVE_MAX: int = 1
 
 BOARD_SIZE: int = 19
 
-
-class TileType(Enum):
-    LUMBER = 0
-    BRICK = 1
-    WOOL = 2
-    GRAIN = 3
-    ROCK = 4
-    DESERT = 5
-
-
-class Tile:
-    tile_type: TileType
-    shape: Polygon
-    text: Text
-    color: str
-    num: int
-    center: Point
-    has_bishop: bool
-
-    def __init__(self, tile_type: TileType, hexagon: Polygon, num: int, has_bishop=False):
-        self.tile_type = tile_type
-        self.shape = hexagon
-        self.color = tile_color(tile_type)
-        self.num = num
-        self.center = get_hexagon_center(hexagon)
-        self.has_bishop = has_bishop
-        self.text = Text(get_hexagon_center(hexagon), str(num))
-
-
-class Road:
-    rect: Polygon
-    player_id: int
-
-    def __init__(self, rect: Polygon, player_id):
-        self.rect = rect
-        self.player_id = player_id
-
-
-class Vertex:
-    pos: Point  # Vertex point
-    adj_tiles: List[Tile]  # list of edge object references
-    has_settlement: bool = False
-
-    def __init__(self, pos: Point, adj_tiles: List[Tile]):
-        self.pos = pos
-        self.adj_tiles = adj_tiles
-
-    def __hash__(self):
-        return hash((self.pos.x, self.pos.y))
-
-    def __eq__(self, other):
-        return (self.pos.x, self.pos.y) == (other.pos.x, other.pos.y)
-
-    def add_settlement(self):
-        self.has_settlement = True
-
-
-class Edge:
-    v1: Vertex
-    v2: Vertex
-    road: Road = None
-    center: Point
-
-    def __init__(self, v1: Vertex, v2: Vertex):
-        self.v1 = v1
-        self.v2 = v2
-        self.center = Point((v1.pos.x + v2.pos.x) / 2, (v1.pos.y + v2.pos.y) / 2)
-
-    def __eq__(self, other):
-        return (self.v1, self.v2) == (other.v1, other.v2)
-
-    def has_road(self) -> bool:
-        if self.road is not None:
-            return True
-        else:
-            return False
-
-    def add_road(self, player_id: int, poly: Polygon) -> bool:
-        if self.road is not None:
-            return False
-
-        self.road = Road(poly, player_id)
-        return True
+TWO_TWELVE_SCORE: int = 1
+THREE_ELEVEN_SCORE: int = 2
+FOUR_TEN_SCORE: int = 3
+FIVE_NINE_SCORE: int = 4
+SIX_EIGHT_SCORE: int = 5
+SEVEN_SCORE: int = 0
 
 
 class BoardGraph:
@@ -193,20 +119,23 @@ class BoardGraph:
 
         return closest_vertex
 
-    def can_build_settlement(self, pos: Point, player_id: int):
+    def build_settlement(self, pos: Point, player: Player, initial_settlement: bool = False):
         v: Vertex = self.nearest_vertex(pos)
 
-        if not v.has_settlement:
+        if v.settlement is None:
             settlement_nearby: bool = False
             connecting_road: bool = False
             for e in self.graph[v]:
-                if (e.v2 == v and e.v1.has_settlement) or (e.v1 == v and e.v2.has_settlement):
+                if (e.v2 == v and e.v1.settlement is not None) or (e.v1 == v and e.v2.settlement is not None):
                     settlement_nearby = True
-                if e.road is not None and e.road.player_id == player_id:
+                if e.road is not None and e.road.player_id == player.player_id:
                     connecting_road = True
 
-            if connecting_road and not settlement_nearby:
-                v.add_settlement()
+            if (connecting_road or initial_settlement) and not settlement_nearby:
+
+                v.add_settlement(player.player_id)
+                player.settlements.append(v)
+                player.score += 1
                 return True
             else:
                 return False
@@ -217,6 +146,10 @@ class BoardGraph:
         edge: Edge = self.nearest_edge(pos)
 
         if not edge.has_road():
+            if ((edge.v1.settlement is not None and edge.v1.settlement.player_id == player_id) or
+                    (edge.v2.settlement is not None and edge.v2.settlement.player_id == player_id)):
+                return True
+
             for e in self.graph[edge.v1] + self.graph[edge.v2]:
                 if e.has_road() and e.road.player_id == player_id:
                     return True
@@ -228,12 +161,83 @@ class BoardGraph:
             edge: Edge = self.nearest_edge(pos)
 
             if not edge.has_road():
+                if (edge.v1.settlement is not None and edge.v1.settlement.player_id == player_id or
+                        edge.v2.settlement is not None and edge.v2.settlement.player_id == player_id):
+                    edge.add_road(player_id, poly)
+                    return True
                 for e in self.graph[edge.v1] + self.graph[edge.v2]:
                     if e.has_road() and e.road.player_id == player_id:
                         edge.add_road(player_id, poly)
                         return True
 
         return False
+
+    def calculate_settlement_distance(self, player: Player, current_vertex: Vertex, distance: int,
+                                      distances: Dict[Vertex, int]):
+        if current_vertex.settlement is not None and current_vertex.settlement.player_id == player.player_id:
+            distance = 0
+        if current_vertex not in distances.keys() or distances[current_vertex] > distance:
+            distances[current_vertex] = distance
+            for edge in self.graph[current_vertex]:
+                if edge.v1 == current_vertex:
+                    self.calculate_settlement_distance(player, edge.v2, distance + 1, distances)
+                else:
+                    self.calculate_settlement_distance(player, edge.v1, distance + 1, distances)
+
+    def available_settlement_locations(self, player: Player) -> Dict[Vertex, int]:
+        distances: Dict[Vertex, int] = {}
+        for settlement in player.settlements:
+            self.calculate_settlement_distance(player, settlement, 0, distances)
+        results: Dict[Vertex, int] = {}
+
+        for k in distances.keys():
+            if distances[k] >= 2:
+                results[k] = distances[k]
+
+        return results
+
+    def best_settlement_locations(self, player: Player) -> Dict[Vertex, int]:
+        distances = self.available_settlement_locations(player)
+        results: Dict[Vertex, int] = {}
+        resource_scores: List[str] = player.resource_importance()
+        for v in distances.keys():
+            score = 0
+            for tile in v.adj_tiles:
+                match tile.tile_type:
+                    case TileType.BRICK:
+                        score += resource_scores.index("brick")
+                    case TileType.LUMBER:
+                        score += resource_scores.index("lumber")
+                    case TileType.ROCK:
+                        score += resource_scores.index("rock")
+                    case TileType.GRAIN:
+                        score += resource_scores.index("grain")
+                    case TileType.WOOL:
+                        score += resource_scores.index("wool")
+                match tile.num:
+                    case 2 | 12:
+                        score += TWO_TWELVE_SCORE
+                    case 3 | 11:
+                        score += THREE_ELEVEN_SCORE
+                    case 4 | 10:
+                        score += FOUR_TEN_SCORE
+                    case 5 | 9:
+                        score += FIVE_NINE_SCORE
+                    case 6 | 8:
+                        score += SIX_EIGHT_SCORE
+                    case 7:
+                        score += SEVEN_SCORE
+                        if player.influenceTokens <= 2:
+                            score += 8
+
+            if len(v.adj_tiles) < 3 and player.influenceTokens <= 2:
+                score += 3
+
+            score -= 2 * distances[v]
+
+            results[v] = score
+
+        return results
 
 
 class Board:
@@ -280,33 +284,6 @@ class Board:
 
 def distance_between_points(p1: Point, p2: Point) -> float:
     return math.sqrt(math.fabs((p1.x - p2.x) ** 2) + math.fabs((p1.y - p2.y) ** 2))
-
-
-def get_hexagon_center(hexagon: Polygon) -> Point:
-    sum_x: int = 0
-    sum_y: int = 0
-    for p in hexagon.getPoints():
-        sum_x += p.x
-        sum_y += p.y
-
-    return Point(sum_x / 6, sum_y / 6)
-
-
-# Relates a TileType with a corresponding color, and returns the string for that color.
-def tile_color(tile_type: TileType) -> str:
-    match tile_type:
-        case TileType.LUMBER:
-            return "Dark Olive Green"
-        case TileType.BRICK:
-            return "Brown"
-        case TileType.WOOL:
-            return "Green Yellow"
-        case TileType.GRAIN:
-            return "Gold"
-        case TileType.ROCK:
-            return "Dim Gray"
-        case _:
-            return "Khaki"
 
 
 # Relates an int with a corresponding TileType, and returns the TileType
@@ -464,28 +441,28 @@ def create_background_hexagon(center: Point, scale: float) -> Polygon:
                    Point(x - scale, y), Point(x - scale / 2, y + d * scale), Point(x + scale / 2, y + d * scale))
 
 
-def generate_tiles(scale: float, board_center: Point) -> List[Tile]:
+def generate_tiles(scale: float, center: Point) -> List[Tile]:
     d: float = math.sqrt(3) / 2
     tile_positions: List[Polygon] = [
-        create_tile_hexagon(Point(board_center.x - d * 2 * scale, board_center.y + 3 * scale), scale),  # Tile 0
-        create_tile_hexagon(Point(board_center.x, board_center.y + 3 * scale), scale),  # Tile 1
-        create_tile_hexagon(Point(board_center.x + d * 2 * scale, board_center.y + 3 * scale), scale),  # Tile 2
-        create_tile_hexagon(Point(board_center.x - d * 3 * scale, board_center.y + 1.5 * scale), scale),  # Tile 3
-        create_tile_hexagon(Point(board_center.x - d * scale, board_center.y + 1.5 * scale), scale),  # Tile 4
-        create_tile_hexagon(Point(board_center.x + d * scale, board_center.y + 1.5 * scale), scale),  # Tile 5
-        create_tile_hexagon(Point(board_center.x + d * 3 * scale, board_center.y + 1.5 * scale), scale),  # Tile 6
-        create_tile_hexagon(Point(board_center.x - d * 2 * scale, board_center.y), scale),  # Tile 7
-        create_tile_hexagon(Point(board_center.x - d * 4 * scale, board_center.y), scale),  # Tile 8
-        create_tile_hexagon(board_center, scale),  # Tile 9 (Desert)
-        create_tile_hexagon(Point(board_center.x + d * 2 * scale, board_center.y), scale),  # Tile 10
-        create_tile_hexagon(Point(board_center.x + d * 4 * scale, board_center.y), scale),  # Tile 11
-        create_tile_hexagon(Point(board_center.x - d * 3 * scale, board_center.y - 1.5 * scale), scale),  # Tile 12
-        create_tile_hexagon(Point(board_center.x - d * scale, board_center.y - 1.5 * scale), scale),  # Tile 13
-        create_tile_hexagon(Point(board_center.x + d * scale, board_center.y - 1.5 * scale), scale),  # Tile 14
-        create_tile_hexagon(Point(board_center.x + d * 3 * scale, board_center.y - 1.5 * scale), scale),  # Tile 15
-        create_tile_hexagon(Point(board_center.x - d * 2 * scale, board_center.y - 3 * scale), scale),  # Tile 16
-        create_tile_hexagon(Point(board_center.x, board_center.y - 3 * scale), scale),  # Tile 17
-        create_tile_hexagon(Point(board_center.x + d * 2 * scale, board_center.y - 3 * scale), scale)  # Tile 18
+        create_tile_hexagon(Point(center.x - d * 2 * scale, center.y - 3 * scale), scale),  # Tile 0
+        create_tile_hexagon(Point(center.x, center.y - 3 * scale), scale),  # Tile 1
+        create_tile_hexagon(Point(center.x + d * 2 * scale, center.y - 3 * scale), scale),  # Tile 2
+        create_tile_hexagon(Point(center.x - d * 3 * scale, center.y - 1.5 * scale), scale),  # Tile 3
+        create_tile_hexagon(Point(center.x - d * scale, center.y - 1.5 * scale), scale),  # Tile 4
+        create_tile_hexagon(Point(center.x + d * scale, center.y - 1.5 * scale), scale),  # Tile 5
+        create_tile_hexagon(Point(center.x + d * 3 * scale, center.y - 1.5 * scale), scale),  # Tile 6
+        create_tile_hexagon(Point(center.x - d * 2 * scale, center.y), scale),  # Tile 7
+        create_tile_hexagon(Point(center.x - d * 4 * scale, center.y), scale),  # Tile 8
+        create_tile_hexagon(center, scale),  # Tile 9 (Desert)
+        create_tile_hexagon(Point(center.x + d * 2 * scale, center.y), scale),  # Tile 10
+        create_tile_hexagon(Point(center.x + d * 4 * scale, center.y), scale),  # Tile 11
+        create_tile_hexagon(Point(center.x - d * 3 * scale, center.y + 1.5 * scale), scale),  # Tile 12
+        create_tile_hexagon(Point(center.x - d * scale, center.y + 1.5 * scale), scale),  # Tile 13
+        create_tile_hexagon(Point(center.x + d * scale, center.y + 1.5 * scale), scale),  # Tile 14
+        create_tile_hexagon(Point(center.x + d * 3 * scale, center.y + 1.5 * scale), scale),  # Tile 15
+        create_tile_hexagon(Point(center.x - d * 2 * scale, center.y + 3 * scale), scale),  # Tile 16
+        create_tile_hexagon(Point(center.x, center.y + 3 * scale), scale),  # Tile 17
+        create_tile_hexagon(Point(center.x + d * 2 * scale, center.y + 3 * scale), scale)  # Tile 18
     ]
     tiles: List[Tile] = []
     type_list: List[TileType] = generate_tile_types(len(tile_positions))

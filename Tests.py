@@ -1,9 +1,11 @@
 import unittest
+from typing import Dict
 
 import Main
 from Main import Action
-from board import Board, BoardGraph, Road
-from graphics import GraphWin, Point, Circle, Polygon
+from board import Board, BoardGraph
+from board_elements import Road, Vertex
+from graphics import GraphWin, Point, Circle, Polygon, Text
 from player import Player
 
 
@@ -18,15 +20,13 @@ class MyTestCase(unittest.TestCase):
         action: Action = Action.BUILD_SETTLEMENT
 
         Main.build_road(board.bg, board.bg.edges[0].center, scale, player1)
-        self.assertTrue(board.bg.can_build_settlement(board.bg.vertices[0].pos, player1.player_id))
-        self.assertFalse(board.bg.can_build_settlement(board.bg.vertices[0].pos, player1.player_id))
-        self.assertFalse(board.bg.can_build_settlement(board.bg.vertices[1].pos, player1.player_id))
-        self.assertFalse(board.bg.can_build_settlement(board.bg.vertices[10].pos, player1.player_id))
+        self.assertTrue(board.bg.build_settlement(board.bg.vertices[0].pos, player1.player_id))
+        self.assertFalse(board.bg.build_settlement(board.bg.vertices[0].pos, player1.player_id))
+        self.assertFalse(board.bg.build_settlement(board.bg.vertices[1].pos, player1.player_id))
+        self.assertFalse(board.bg.build_settlement(board.bg.vertices[10].pos, player1.player_id))
 
         win.close()
 
-
-class MyTestCase2(unittest.TestCase):
     def test_build_road(self):
         win = GraphWin("Catan Board", 1000, 700)
         scale: float = 50.0
@@ -74,6 +74,40 @@ class MyTestCase2(unittest.TestCase):
                     placement_poly.undraw()
                     placement_poly_drawn = False
 
+        win.close()
+
+    def test_distance_calculator(self):
+        win = GraphWin("Catan Board", 1000, 700)
+        scale: float = 50.0
+        center: Point = Point(500, 350)
+        board: Board = Board(scale, center)
+        board.draw_board(win)
+        bg: BoardGraph = board.bg
+        player1: Player = Player("Blue", 0)
+        circle1 = Circle(bg.vertices[11].pos, 20.0)
+        circle1.setFill(player1.color)
+        circle1.draw(win)
+        circle2 = Circle(bg.vertices[17].pos, 20.0)
+        circle2.setFill(player1.color)
+        circle2.draw(win)
+        circle3 = Circle(bg.vertices[25].pos, 20.0)
+        circle3.setFill(player1.color)
+        circle3.draw(win)
+
+        self.assertTrue(bg.build_settlement(bg.vertices[17].pos, player1, True))
+        self.assertTrue(bg.build_settlement(bg.vertices[11].pos, player1, True))
+        self.assertTrue(bg.build_settlement(bg.vertices[25].pos, player1, True))
+
+        distances: Dict[Vertex, int] = bg.best_settlement_locations(player1)
+        print(distances)
+
+        for v in distances.keys():
+            t: Text = Text(v.pos, str(distances[v]))
+            t.setFill("Red")
+            t.setSize(scale if scale <= 36 else 36)
+            t.draw(win)
+
+        win.getMouse()
         win.close()
 
 
