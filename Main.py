@@ -323,7 +323,7 @@ def main():
                 placement_circle.move(new_point.x - placement_circle.getCenter().x,
                                       new_point.y - placement_circle.getCenter().y)
                 
-                if win.checkMouse() is not None and board.bg.can_build_settlement(new_point, player1.player_id):
+                if win.checkMouse() is not None and board.bg.build_settlement(new_point, player1.player_id):
                     settlement: placement_circle = Circle(new_point, 20.0)
                     settlement.setFill("Blue")
                     settlement.draw(win)
