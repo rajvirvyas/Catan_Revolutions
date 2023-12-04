@@ -6,60 +6,76 @@ from graphics import *
 from tkinter import *
 from player import Player
 from trade import *
+import pygame
 
 player1: Player = Player("Red", 1) # Does not accurately connect chosen color to player
 player2: Player = Player("Blue", 2) # does not connect chosen color to player
 bank: Player = Player("Yellow", 0)
 
 current_player = 1  # Default to player 1's turn
+
+def play():
+            pygame.mixer.init()
+            pygame.mixer.music.load("music.wav")
+            pygame.mixer.music.play(loops=0)
+def stop_sound():
+    pygame.mixer.music.stop()
+
 #--------------------------------------------------------------------------------------
 def start_menu():
         start_win = Tk()
         start_win.title("Catan Start Menu")
         start_win.geometry("1100x700")
-        
-        
+        start_win.config(bg="skyblue")
+       
         # Define start button command
         def start_game():
+            stop_sound()
             start_win.destroy()
             # start_turn(p1, p2)
             main()
-
-        text_label = Label(start_win, text="Catan Revolutions", font=("Arial", 24), fg="red")
+       
+        
+        
+        text_label = Label(start_win, text="CATAN REVOLUTIONS", font=("Impact", 80), bg="skyblue",fg="firebrick")
+        # text_label.setStyle('bold')
         text_label.pack(pady=20)
+        
+        sword = Label(start_win, font=("Helvetica", 150),fg="black", bg="skyblue",text='')  # Create a label with empty text
+        sword.place(x=500, y=350)
+        img= '\u2694'
+        sword.config(text=img)
+        
+        queen = Label(start_win, font=("Helvetica", 150), fg="firebrick",bg="skyblue",text='')  # Create a label with empty text
+        queen.place(x=700, y=350)
+        img2= '\u265B'  
+        queen.config(text=img2)
 
-        text_label = Label(start_win, text="Strategize. Influence. Rebel.", font=("Arial", 18))
+        king = Label(start_win, font=("Helvetica", 150), fg="firebrick",bg="skyblue", text='')  # Create a label with empty text
+        king.place(x=300, y=350)
+        img3= '\u265A'  
+        king.config(text=img3)
+
+        
+        text_label = Label(start_win, text="Strategize. Influence. Rebel.", font=("Garamond", 40),bg="skyblue", fg="black")
         text_label.pack(pady=20)
-        # Player selection
-        color_var = StringVar()
-        color_var.set("Red")  # Default selection
-         # Get player selection
-        player_color = color_var.get()
-        if player_color == "Red":
-                    player1 = Player("Red", 1)
-                    player2 = Player("Blue", 2)
-        else:
-                    player1 = Player(1, "Blue")
-                    player2 = Player(2, "Red")
-        red_button = Radiobutton(start_win, text="Red", variable=color_var, value="Red")
-        blue_button = Radiobutton(start_win, text="Blue", variable=color_var, value="Blue")
-        red_button.pack(pady=10)
-        blue_button.pack(pady=10)
-
+        
+        # Play the sound when the script is executed
+        play()
         # Create buttons for start menu
-        start_button = Button(start_win, text="Start Game", command=start_game)
-        exit_button = Button(start_win, text="Exit", command=start_win.quit)
+        start_button = Button(start_win, text="START", font=("Impact", 20),bg="skyblue",width=15, height= 1,command=start_game)
+        quit_button = Button(start_win, text="QUIT",font=("Impact", 20),bg="skyblue", width=15, height= 1,command=start_win.quit)
 
         # Pack buttons into the window
         start_button.pack(pady=20)
-        exit_button.pack(pady=20)
-
+        quit_button.pack(pady=20)
+        
         start_win.mainloop()
 #--------------------------------------------------------------------------------------
 
 ROAD_WIDTH: int = 10
 
-win = GraphWin("Catan Board", 1100, 700)
+
 
 
 class Action(Enum):
@@ -95,7 +111,7 @@ def road_poly(e: Edge, scale: float) -> Polygon:
                        Point(v2x - scale / 10, v2y), Point(v2x + scale / 10, v2y))
 
 
-def build_road(bg: BoardGraph, pos: Point, scale: float, player: Player) -> bool:
+def build_road(bg: BoardGraph, pos: Point, scale: float, player: Player, win) -> bool:
     e: Edge = bg.nearest_edge(pos)
 
     if not bg.can_build_road(pos, player.player_id):
@@ -169,6 +185,8 @@ def printEnd(text_widget):
  
 
 def main():
+    win = GraphWin("Catan Board", 1100, 700)
+    win.config(bg="skyblue")
     scale: float = 50.0
     center: Point = Point(500, 350)
     board: Board = Board(scale, center)
@@ -191,17 +209,17 @@ def main():
     action: Action = Action.BUILD_SETTLEMENT
     
     # Create a text box for chat log
-    chat_text = Text(win, height=20, width=40, wrap='word', fg='white')
+    chat_text = Text(win, height=20, width=40, wrap='word', bg= 'white',fg='black')
     chat_text.place(x=800, y=0)
 
-    bank_text = Text(win, height=5, width=40, wrap='word', bg='yellow', fg='black')
+    bank_text = Text(win, height=5, width=40, wrap='word', bg='gold', fg='black')
     bank_text.place(x=800, y=325)
 
-    victory_text= Text(win, height=5, width=40, wrap='word', bg='black', fg='green',font='Helvetica 12 bold italic')
+    victory_text= Text(win, height=4, width=40, wrap='word', bg='springgreen2', fg='black',font=('Impact', ))
     victory_text.place(x=800, y=400)
    
 
-    box= Label(win, font=("Helvetica", 55), text='', bg='green')  # Create a label with empty text
+    box= Label(win, font=("Helvetica", 55), text='', bg='black')  # Create a label with empty text
     box.place(x=945, y=402)
     
     
@@ -218,7 +236,7 @@ def main():
     update_chat_log(chat_text, f'P1 is {player1.color}\n')
     update_chat_log(chat_text, f'P2 is {player2.color}\n')
     update_chat_log(victory_text, "Points\n")
-    update_chat_log(victory_text, message = f"P1: {player1.score}".ljust(30) + f"P2: {player2.score}".rjust(35)
+    update_chat_log(victory_text, message = f"P1: {player1.score}".ljust(30) + f"P2: {player2.score}".rjust(50)
 )
     #update_chat_log(chat_text, f'BANK is {bank.color}\n')
 
@@ -233,34 +251,34 @@ def main():
 
 # For Dice-----------------------------------------------------------------------------
 
-    l1 = Label(win, font=("Helvetica", 150), text='')  # Create a label with empty text
+    l1 = Label(win, font=("Helvetica", 150),  bg="skyblue",text='')  # Create a label with empty text
     l1.place(x=20, y=0)
-    b1 = Button(win, text="Roll the Dice!", foreground='blue', command=lambda: [roll(l1, chat_text)])
+    b1 = Button(win, text="Roll the Dice!", foreground='blue', background="skyblue",command=lambda: [roll(l1, chat_text)])
     b1.place(x=20, y=0)
 #--------------------------------------------------------------------------------------
-    l2 = Label(win, font=("Helvetica", 150), text='')  # Create a label with empty text
+    l2 = Label(win, font=("Helvetica", 150),  bg="skyblue",text='')  # Create a label with empty text
     l2.place(x=20, y=500)
-    b2 = Button(win, text="Infleunce Tokens", foreground='blue', command= lambda: printTokens(chat_text))
+    b2 = Button(win, text="Infleunce Tokens", foreground='blue', bg="skyblue", command= lambda: printTokens(chat_text))
     b2.place(x=20, y=500)
 
-    l3 = Label(win, font=("Helvetica", 150), text='')  # Create a label with empty text
+    l3 = Label(win, font=("Helvetica", 150), bg="skyblue", text='')  # Create a label with empty text
     l3.place(x=20, y=550)
-    b3 = Button(win, text="Resource Cards", foreground='blue', command= lambda: printResources(chat_text))
+    b3 = Button(win, text="Resource Cards", foreground='blue', bg="skyblue",command= lambda: printResources(chat_text))
     b3.place(x=20, y=550)
 
-    l4 = Label(win, font=("Helvetica", 150), text='')  # Create a label with empty text
+    l4 = Label(win, font=("Helvetica", 150), bg="skyblue",text='')  # Create a label with empty text
     l4.place(x=20, y=600)
-    l4 = Button(win, text="Trade", foreground='blue', command= lambda: printTrade(chat_text))
+    l4 = Button(win, text="Trade", foreground='blue', bg="skyblue", command= lambda: printTrade(chat_text))
     l4.place(x=20, y=600)
 
-    l5 = Label(win, font=("Helvetica", 150), text='')  # Create a label with empty text
+    l5 = Label(win, font=("Helvetica", 150), bg="skyblue",text='')  # Create a label with empty text
     l5.place(x=1010, y=500)
-    l5 = Button(win, text="End Turn", foreground='blue', command= lambda: printEnd(chat_text))
+    l5 = Button(win, text="End Turn", foreground='blue', bg="skyblue", command= lambda: printEnd(chat_text))
     l5.place(x=1010, y=500)
 
-    l6 = Label(win, font=("Helvetica", 150), text='')  # Create a label with empty text
+    l6 = Label(win, font=("Helvetica", 150),  bg="skyblue",text='')  # Create a label with empty text
     l6.place(x=1010, y=550)
-    l6 = Button(win, text="AI Assist", foreground='blue', command= lambda: printAIAssist(chat_text))
+    l6 = Button(win, text="AI Assist", foreground='blue', bg="skyblue", command= lambda: printAIAssist(chat_text))
     l6.place(x=1010, y=550)
 
 
@@ -444,7 +462,7 @@ def main():
             update_chat_log(chat_text,user_input)
         user_entry.delete(0, 'end')  # Clear the user entry field
 
-    send_button = Button(win, text="Enter", command=send_message)
+    send_button = Button(win, text="Enter", bg="skyblue", command=send_message)
     send_button.place(x=1030, y=275)
 
     while True:
@@ -472,6 +490,7 @@ def main():
             case _:
                 placement_circle.undraw()
                 placement_circle_drawn = False
+        win.mainloop()
 
 if __name__ == "__main__":
     start_menu()
