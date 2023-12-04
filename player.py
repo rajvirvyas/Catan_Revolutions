@@ -7,14 +7,12 @@ class Player:
     # Number of each Influence Tokens
     influenceTokens: int
     # Lists of settlements, cities, and roads
-    settlements: List[Vertex] = []
-    cities: List[Vertex] = []
-    roads: List[Edge] = []
+    settlements: List[Vertex]
+    roads: List[Edge]
 
     # Counts used to calculate points
     mercenaries_played: int
 
-    score: int = 0
     color: str
     player_id: int
     resources_dict: dict
@@ -25,6 +23,9 @@ class Player:
         self.resources_dict = {'lumber': 0, 'brick': 0, 'wool': 0, 'grain': 0, 'rock': 0}
         self.influenceTokens = 5
         self.mercenaries_played = 0
+        self.settlements = []
+        self.roads = []
+        self.score = 0
 
     def resource_importance(self) -> List[str]:
         resource_scores: Dict[str, int] = {"brick": 0, "lumber": 0, "grain": 0, "wool": 0, "rock": 0, "desert": 0}

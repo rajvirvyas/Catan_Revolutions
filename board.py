@@ -135,6 +135,7 @@ class BoardGraph:
 
                 v.add_settlement(player.player_id)
                 player.settlements.append(v)
+                player.score += 1
                 return True
             else:
                 return False
@@ -160,6 +161,10 @@ class BoardGraph:
             edge: Edge = self.nearest_edge(pos)
 
             if not edge.has_road():
+                if (edge.v1.settlement is not None and edge.v1.settlement.player_id == player_id or
+                        edge.v2.settlement is not None and edge.v2.settlement.player_id == player_id):
+                    edge.add_road(player_id, poly)
+                    return True
                 for e in self.graph[edge.v1] + self.graph[edge.v2]:
                     if e.has_road() and e.road.player_id == player_id:
                         edge.add_road(player_id, poly)
@@ -436,28 +441,28 @@ def create_background_hexagon(center: Point, scale: float) -> Polygon:
                    Point(x - scale, y), Point(x - scale / 2, y + d * scale), Point(x + scale / 2, y + d * scale))
 
 
-def generate_tiles(scale: float, board_center: Point) -> List[Tile]:
+def generate_tiles(scale: float, center: Point) -> List[Tile]:
     d: float = math.sqrt(3) / 2
     tile_positions: List[Polygon] = [
-        create_tile_hexagon(Point(board_center.x - d * 2 * scale, board_center.y + 3 * scale), scale),  # Tile 0
-        create_tile_hexagon(Point(board_center.x, board_center.y + 3 * scale), scale),  # Tile 1
-        create_tile_hexagon(Point(board_center.x + d * 2 * scale, board_center.y + 3 * scale), scale),  # Tile 2
-        create_tile_hexagon(Point(board_center.x - d * 3 * scale, board_center.y + 1.5 * scale), scale),  # Tile 3
-        create_tile_hexagon(Point(board_center.x - d * scale, board_center.y + 1.5 * scale), scale),  # Tile 4
-        create_tile_hexagon(Point(board_center.x + d * scale, board_center.y + 1.5 * scale), scale),  # Tile 5
-        create_tile_hexagon(Point(board_center.x + d * 3 * scale, board_center.y + 1.5 * scale), scale),  # Tile 6
-        create_tile_hexagon(Point(board_center.x - d * 2 * scale, board_center.y), scale),  # Tile 7
-        create_tile_hexagon(Point(board_center.x - d * 4 * scale, board_center.y), scale),  # Tile 8
-        create_tile_hexagon(board_center, scale),  # Tile 9 (Desert)
-        create_tile_hexagon(Point(board_center.x + d * 2 * scale, board_center.y), scale),  # Tile 10
-        create_tile_hexagon(Point(board_center.x + d * 4 * scale, board_center.y), scale),  # Tile 11
-        create_tile_hexagon(Point(board_center.x - d * 3 * scale, board_center.y - 1.5 * scale), scale),  # Tile 12
-        create_tile_hexagon(Point(board_center.x - d * scale, board_center.y - 1.5 * scale), scale),  # Tile 13
-        create_tile_hexagon(Point(board_center.x + d * scale, board_center.y - 1.5 * scale), scale),  # Tile 14
-        create_tile_hexagon(Point(board_center.x + d * 3 * scale, board_center.y - 1.5 * scale), scale),  # Tile 15
-        create_tile_hexagon(Point(board_center.x - d * 2 * scale, board_center.y - 3 * scale), scale),  # Tile 16
-        create_tile_hexagon(Point(board_center.x, board_center.y - 3 * scale), scale),  # Tile 17
-        create_tile_hexagon(Point(board_center.x + d * 2 * scale, board_center.y - 3 * scale), scale)  # Tile 18
+        create_tile_hexagon(Point(center.x - d * 2 * scale, center.y - 3 * scale), scale),  # Tile 0
+        create_tile_hexagon(Point(center.x, center.y - 3 * scale), scale),  # Tile 1
+        create_tile_hexagon(Point(center.x + d * 2 * scale, center.y - 3 * scale), scale),  # Tile 2
+        create_tile_hexagon(Point(center.x - d * 3 * scale, center.y - 1.5 * scale), scale),  # Tile 3
+        create_tile_hexagon(Point(center.x - d * scale, center.y - 1.5 * scale), scale),  # Tile 4
+        create_tile_hexagon(Point(center.x + d * scale, center.y - 1.5 * scale), scale),  # Tile 5
+        create_tile_hexagon(Point(center.x + d * 3 * scale, center.y - 1.5 * scale), scale),  # Tile 6
+        create_tile_hexagon(Point(center.x - d * 2 * scale, center.y), scale),  # Tile 7
+        create_tile_hexagon(Point(center.x - d * 4 * scale, center.y), scale),  # Tile 8
+        create_tile_hexagon(center, scale),  # Tile 9 (Desert)
+        create_tile_hexagon(Point(center.x + d * 2 * scale, center.y), scale),  # Tile 10
+        create_tile_hexagon(Point(center.x + d * 4 * scale, center.y), scale),  # Tile 11
+        create_tile_hexagon(Point(center.x - d * 3 * scale, center.y + 1.5 * scale), scale),  # Tile 12
+        create_tile_hexagon(Point(center.x - d * scale, center.y + 1.5 * scale), scale),  # Tile 13
+        create_tile_hexagon(Point(center.x + d * scale, center.y + 1.5 * scale), scale),  # Tile 14
+        create_tile_hexagon(Point(center.x + d * 3 * scale, center.y + 1.5 * scale), scale),  # Tile 15
+        create_tile_hexagon(Point(center.x - d * 2 * scale, center.y + 3 * scale), scale),  # Tile 16
+        create_tile_hexagon(Point(center.x, center.y + 3 * scale), scale),  # Tile 17
+        create_tile_hexagon(Point(center.x + d * 2 * scale, center.y + 3 * scale), scale)  # Tile 18
     ]
     tiles: List[Tile] = []
     type_list: List[TileType] = generate_tile_types(len(tile_positions))
