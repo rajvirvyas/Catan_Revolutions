@@ -1,11 +1,11 @@
 from player import Player
 import random
 
-def trade(p1,p2,bank, take, give):
-    p1.resources_dict[take] -=4
+def trade(player,bank, take, give):
+    player.resources_dict[take] -=4
     bank.resources_dict[take] +=4
     bank.resources_dict[give] -=1
-    p1.resources_dict[give] +=1 
+    player.resources_dict[give] +=1 
     return (f'Tresury holds\n {bank.resources_dict}\n')
 
 def forced_trade(fromPlayer, toPlayer, g1, g2):
